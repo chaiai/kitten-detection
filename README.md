@@ -13,8 +13,8 @@ Trained on an NVIDIA Jetson Nano 4GB Developer Kit using [jetson-inference](http
     - train.txt
     - val.txt
     - trainval.txt
-    - text.txt
-- JPEGImages/ 2552 photos
+    - test.txt
+- JPEGImages/ 2552 .JPG photos
 - labels.txt
 
 ## The kittens
