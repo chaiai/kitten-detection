@@ -36,7 +36,7 @@ To save time, I trained the model using my host computer running Ubuntu 18.04 LT
 
 The best path (lowest loss value) was sent to my Jetson Nano via:
 
-<code>scp models/kittens/mb2-mobilenet-Epoch-##-Loss-####.pth chai@<NANO_IP_ADDRESS>:/home/chai/jetson-inference/python/training/detection/ssd/models/kittens_200</code>
+<code>scp models/kittens/mb1-mobilenet-Epoch-##-Loss-####.pth chai@<NANO_IP_ADDRESS>:/home/chai/jetson-inference/python/training/detection/ssd/models/kittens_200</code>
 
 ## Convert to ONNX
 
