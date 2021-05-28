@@ -34,7 +34,7 @@ I copied the directory structure that is saved using the <code>camera-capture</c
 
 To save time, I trained the model using my host computer running Ubuntu 18.04 LTS with an NVIDIA GTX 2060 graphics card using the NGC PyTorch Container.
 
-The best path (lowest loss value) was sent to my Jetson Nano via:
+The best path (lowest loss value) was sent to my Jetson Nano via SCP:
 
 <code>scp models/kittens/mb1-mobilenet-Epoch-##-Loss-####.pth chai@<NANO_IP_ADDRESS>:/home/chai/jetson-inference/python/training/detection/ssd/models/kittens_200</code>
 
