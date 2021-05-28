@@ -1,21 +1,49 @@
-# kitten-detection
-Re-trained MobileNet-SSD-V1 DetectNet to detect 5 kittens.
+# Re-training DetectNet
 
-Trained on an NVIDIA Jetson Nano 4GB Developer Kit using [jetson-inference](https://github.com/dusty-nv/jetson-inference).
+I collected 2552 images of the 5 kittens using my iPhone and labeled them using labelImg on my desktop computer and saved them in Pascal-VOC format.
 
-## Data directory structure:
+I copied the directory structure that is saved using the <code>camera-capture</code> tool in <code>jetson-inference/utils</code> as follows:
 
-<code>jetson-inference/python/training/detection/ssd/data/kittens</code>
+<code>jetson-inference/python/training/detection/ssd/data/</code>
 
-- Annotations/ 2552 .XML annotations
-- ImageSets/ 
-  - Main/ [each .txt file contains the filenames of the images/annotations for each set]
-    - train.txt
-    - val.txt
-    - trainval.txt
-    - test.txt
-- JPEGImages/ 2552 .JPG photos
-- labels.txt
+- Annotations/ [2552 .XML annotations]
+- ImageSets/
+    - Main/
+        - train.txt
+        - test.txt
+        - val.txt
+        - trainval.txt
+- JPEGImages/ [2552 .JPG images]
+
+To determine which network to retrain, I tested a set of 20 images consisting of a variation of single kittens, multiple kittens, and various objects in the images.
+
+Example code:
+
+<code>cd /jetson-inference/build/aarch64/bin</code>
+
+<code>detectnet --network=<ssd-mobilenet-v1/ssd-mobilenet-v2/ssd-inception-v2> "images/kittens/*.jpg" images/test/kittens/%i_<v1/v2/inception>.jpg</code>
+
+#### Training
+
+I trained the network using the tutorial from jetson-inference on re-training MobileNet-SSD-V1, but performed the training on my desktop computer. 
+
+This computer is running Ubuntu 18.04 LTS, and I used the NVIDIA NGC PyTorch container with the jetson-inference directory mounted in the workspace.
+
+After training for 50, 100, 150, and eventually 200 epochs, I transferred the best path from the model (Epoch 198, Loss=0.7824) to my Jetson Nano via SCP.
+
+#### Export model to ONNX
+
+From the Jetson Nano, I then ran:
+
+<code>python3 export_onnx.py --model-dir=models/kittens_200</code>
+
+  This created a file named <code>mobilenet-ssd.onnx</code> in the <code>models/kittens_200</code> directory. This is the model from which I can launch <code>detectnet</code>.
+
+#### Live camera demo
+
+From the directory <code>jetson-inference/python/training/detection/ssd</code>:
+
+<code>detectnet --model=models/kittens_200/mobilenet-ssd.onnx --labels=models/kittens_200/labels.txt --input-blob=input_0 --output-cvg=scores --output-bbox=boxes --input-flip=rotate-180 csi://0</code>
 
 ## The kittens
 
