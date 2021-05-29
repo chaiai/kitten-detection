@@ -1,5 +1,12 @@
 # Re-training DetectNet
 
+## Video Results
+    
+Here is a video of a few videos I took of the kittens side-by-side with the original pre-trained network.
+    
+https://youtu.be/iS5UZOujUOE
+
+## Methodology
 
 To determine which network to retrain, I tested a set of 20 images consisting of a variation of single kittens, multiple kittens, and various objects in the images.
 
@@ -54,11 +61,6 @@ To use the CSI camera I have attached to my Jetson Nano (which needs to be flipp
 
 <code>detectnet --model=models/kittens_200/ssd-mobilenet.onnx --labels=models/kittens_200/labels.txt --input-blob=input_0 --output-cvg=scores --output-bbox=boxes --input-flip=rotate-180 csi://0</code>
 
-## Video Results
-    
-Here is a video of a few videos I took of the kittens side-by-side with the original pre-trained network.
-    
-https://youtu.be/iS5UZOujUOE
     
 ## The kittens
 
