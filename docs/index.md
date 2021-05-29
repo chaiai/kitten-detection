@@ -1,37 +1,89 @@
-## Welcome to GitHub Pages
+# Re-training DetectNet
 
-You can use the [editor on GitHub](https://github.com/chaiai/kitten-detection/edit/main/docs/index.md) to maintain and preview the content for your website in Markdown files.
+## Video Results
+    
+Here is a video of a few videos I took of the kittens side-by-side with the original pre-trained network.
+    
+https://youtu.be/iS5UZOujUOE
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## Methodology
 
-### Markdown
+To determine which network to retrain, I tested a set of 20 images consisting of a variation of single kittens, multiple kittens, and various objects in the images.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+Example code:
 
-```markdown
-Syntax highlighted code block
+<code>cd /jetson-inference/build/aarch64/bin</code>
 
-# Header 1
-## Header 2
-### Header 3
+<code>detectnet --network=<ssd-mobilenet-v1/ssd-mobilenet-v2/ssd-inception-v2> "images/kittens/*.jpg" images/test/kittens/%i_<v1/v2/inception>.jpg</code>
 
-- Bulleted
-- List
+I chose to retrain the SSD-Mobilenet-v1 model since the models performed similarly with the base model. The SSD-Mobilenet-v1 model is built into <code>jetson-inference</code>, so I chose to retrain that model for the fastest and most efficient inference.
 
-1. Numbered
-2. List
+## Data collection
 
-**Bold** and _Italic_ and `Code` text
+In 4 seperate occasions, I took hundreds of photos of each of the kittens, making sure that I took an approxmitely equal number of photos of each kitten. I then labeled the images using [labelImg](https://github.com/tzutalin/labelImg). This process took a very long time, and I completed it over the course of 4 days.
 
-[Link](url) and ![Image](src)
-```
+I copied the directory structure that is saved using the <code>camera-capture</code> tool in <code>jetson-inference/utils</code> as follows:
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+<code>jetson-inference/python/training/detection/ssd/data/</code>
 
-### Jekyll Themes
+- Annotations/ [2552 .XML annotations]
+- ImageSets/
+    - Main/
+        - train.txt
+        - test.txt
+        - val.txt
+        - trainval.txt
+- JPEGImages/ [2552 .JPG images]
+    
+> The <code>.txt</code> files contain the filenames only of each image set, e.g. "IMG_1040", which has an associated <code>.jpg</code> and <code>.xml</code> file with the same filename. I used sklearn's train_test_split to create these files with a 60% train, 30% val, 10% test split. 
+    
+Per the advice of Andrew Ng, as I tested my network throughout training checkpoints and found the model to be underperforming only in certain angles and lighting conditions, so I took photos that represented these errors and added them to the validation dataset so the network was learning to perform with this data, not just represent it. Dr. Ng's "data-centric" versus "model-centric" approach can be demonstrated here.
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/chaiai/kitten-detection/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+## Training
 
-### Support or Contact
+To save time, I trained the model using my host computer running Ubuntu 18.04 LTS with an NVIDIA GTX 2060 graphics card using the NGC PyTorch Container.
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+The best path (lowest loss value) was sent to my Jetson Nano via SCP:
+
+<code>scp models/kittens/mb1-mobilenet-Epoch-##-Loss-####.pth chai@<NANO_IP_ADDRESS>:/home/chai/jetson-inference/python/training/detection/ssd/models/kittens_200</code>
+
+## Convert to ONNX
+
+<code>python3 onnx_export.py --model-dir=models/kittens_200</code>
+
+[Note: I do this step on the Nano itself to ensure the ONNX model is created using the correct parameters for the device it will be running on.]
+    
+This created a file named <code>mobilenet-ssd.onnx</code> in the <code>models/kittens_200</code> directory. This is the model from which I can launch <code>detectnet</code>.
+
+## Live Demo
+
+To use the CSI camera I have attached to my Jetson Nano (which needs to be flipped via <code>--input-flip</code>) in my configuration, I can call:
+
+<code>detectnet --model=models/kittens_200/ssd-mobilenet.onnx --labels=models/kittens_200/labels.txt --input-blob=input_0 --output-cvg=scores --output-bbox=boxes --input-flip=rotate-180 csi://0</code>
+
+    
+## The kittens
+
+The 5 kittens were found very young and named after characters from *Friends*.
+
+### Chandler
+
+![chandler](https://user-images.githubusercontent.com/81446209/118375279-d8126600-b58e-11eb-8e0e-da88b67dd4a4.JPG)
+
+### Gunther
+
+![gunther](https://user-images.githubusercontent.com/81446209/118375292-e8c2dc00-b58e-11eb-8207-2dcbf2585fd0.JPG)
+
+### Joey
+
+![joey](https://user-images.githubusercontent.com/81446209/118375298-efe9ea00-b58e-11eb-8332-b673d9003813.JPG)
+
+
+### Rachel
+
+![rachel](https://user-images.githubusercontent.com/81446209/118375300-f24c4400-b58e-11eb-843c-06bacdf3862f.JPG)
+
+
+### Ross
+
+![ross](https://user-images.githubusercontent.com/81446209/118375305-f4ae9e00-b58e-11eb-8946-b33e56259ff6.JPG)
