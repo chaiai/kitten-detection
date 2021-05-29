@@ -28,7 +28,9 @@ I copied the directory structure that is saved using the <code>camera-capture</c
         - trainval.txt
 - JPEGImages/ [2552 .JPG images]
     
-    **[Note:]** The <code>.txt</code> files contain the filenames only of each image set, e.g. "IMG_1040", which has an associated <code>.jpg</code> and <code>.xml</code> file with the same filename
+> The <code>.txt</code> files contain the filenames only of each image set, e.g. "IMG_1040", which has an associated <code>.jpg</code> and <code>.xml</code> file with the same filename. I used sklearn's train_test_split to create these files with a 60% train, 30% val, 10% test split. 
+    
+Per the advice of Andrew Ng, as I tested my network throughout training checkpoints and found the model to be underperforming only in certain angles and lighting conditions, so I took photos that represented these errors and added them to the validation dataset so the network was learning to perform with this data, not just represent it. Dr. Ng's "data-centric" versus "model-centric" approach can be demonstrated here.
 
 ## Training
 
@@ -52,8 +54,12 @@ To use the CSI camera I have attached to my Jetson Nano (which needs to be flipp
 
 <code>detectnet --model=models/kittens_200/ssd-mobilenet.onnx --labels=models/kittens_200/labels.txt --input-blob=input_0 --output-cvg=scores --output-bbox=boxes --input-flip=rotate-180 csi://0</code>
 
-video file
-
+## Video Results
+    
+Here is a video of a few videos I took of the kittens side-by-side with the original pre-trained network.
+    
+https://youtu.be/iS5UZOujUOE
+    
 ## The kittens
 
 The 5 kittens were found very young and named after characters from *Friends*.
