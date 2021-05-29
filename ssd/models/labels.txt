@@ -1,1 +1,6 @@
-
+BACKGROUND
+chandler
+gunther
+joey
+rachel
+ross
